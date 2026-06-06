@@ -1,0 +1,6 @@
+{
+  "name": "Food Stall Rush",
+  "description": "Mod Santai Urus Pelanggan - A relaxing, warm cartoon-style Malaysian food stall tycoon game.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

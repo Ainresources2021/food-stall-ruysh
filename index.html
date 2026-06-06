@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Stall Rush: Mod Santai Urus Pelanggan</title>
+  <!-- Load Playful Rounded Cartoon Font and Readable Body Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Inter:wght@300..900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS V3 CDN for Styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            fredoka: ['Fredoka', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #fdf6e2;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2b772;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d4a35c;
+    }
+
+    /* Custom Animations */
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .animate-bounce-slow {
+      animation: bounce-slow 2.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse-gently {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.03); }
+    }
+    .animate-pulse-gently {
+      animation: pulse-gently 2s infinite ease-in-out;
+    }
+
+    @keyframes float-steam {
+      0% { transform: translateY(0) scale(0.8); opacity: 0; }
+      20% { opacity: 0.6; }
+      80% { opacity: 0.3; }
+      100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+    }
+    .steam-particle {
+      animation: float-steam 1.8s infinite linear;
+    }
+
+    /* Confetti rain for win screen */
+    @keyframes fall {
+      0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+    .confetti {
+      position: absolute;
+      animation: fall 4s linear infinite;
+    }
+
+    /* Custom shadow cartoon look */
+    .cartoon-shadow {
+      box-shadow: 4px 4px 0px #4a2c11;
+    }
+    .cartoon-shadow-sm {
+      box-shadow: 2px 2px 0px #4a2c11;
+    }
+    
+    /* Click Active Offset list */
+    .btn-active-offset:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #4a2c11;
+    }
+
+    /* Wood pattern colors */
+    .bg-wood {
+      background-color: #f7e6c4;
+      background-image: radial-gradient(#ecd5ab 15%, transparent 16%),
+                        radial-gradient(#ecd5ab 15%, transparent 16%);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+    }
+
+    /* Progress bar transition */
+    .smooth-progress {
+      transition: width 100ms linear;
+    }
+  </style>
+</head>
+<body class="bg-[#fcf8f0] text-[#3e2715] min-h-screen font-sans flex flex-col justify-between antialiased">
+
+  <!-- ================= HEADER TOP BAR ================= -->
+  <header class="bg-[#e97d52] border-b-4 border-[#3e2715] px-4 py-3 sticky top-0 z-40 w-full shadow-md">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <!-- Title Block -->
+      <div class="flex items-center gap-3">
+        <span class="text-3xl sm:text-4xl animate-bounce-slow">👨‍🍳</span>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold font-fredoka text-white tracking-wide drop-shadow-sm flex items-center gap-2">
+            Food Stall Rush <span class="text-xs font-normal px-2 py-0.5 rounded-full bg-[#fcd45c] text-brown-900 border border-[#3e2715] animate-pulse-gently">Mod Santai</span>
+          </h1>
+          <p class="text-xs text-[#ffe6d4] font-medium">Urus Kedai Tanpa Stress & Relevan</p>
+        </div>
+      </div>
+
+      <!-- Quick Audio, Highscore & Back-to-Menu Row -->
+      <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
+        <!-- High Score Badge -->
+        <div id="header-highscore" class="bg-[#8cc63f] border-2 border-[#3e2715] cartoon-shadow-sm px-3 py-1 rounded-lg text-white font-fredoka flex items-center gap-1.5 text-xs sm:text-sm">
+          <span>🏆 Rekod:</span>
+          <span id="best-score" class="font-bold">0</span>
+        </div>
+
+        <!-- Mute/Unmute sound toggler -->
+        <button id="btn-audio" onclick="toggleMute()" class="w-10 h-10 bg-white border-2 border-[#3e2715] hover:bg-[#fff9ea] rounded-xl flex items-center justify-center text-xl transition-all btn-active-offset cartoon-shadow-sm cursor-pointer" title="Bunyi Aktif/Sempit">
+          🔊
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= PLAYABLE CANVAS CONTAINER ================= -->
+  <main class="flex-grow w-full max-w-6xl mx-auto p-3 sm:p-5 relative">
+    
+    <!-- ================= 1. SCREEN: MAIN MENU ================= -->
+    <section id="screen-menu" class="flex flex-col items-center justify-center py-8 sm:py-16 max-w-lg mx-auto text-center transition-all duration-300">
+      
+      <!-- Stall Logo Mockup -->
+      <div class="relative mb-6">
+        <div class="w-32 h-32 sm:w-40 sm:h-40 bg-[#fff1d0] border-4 border-[#3e2715] rounded-full flex items-center justify-center text-6xl sm:text-7xl shadow-xl z-10 animate-bounce-slow cartoon-shadow">
+          🍲
+        </div>
+        <!-- Floating Emojis around -->
+        <div class="absolute -top-2 -left-2 text-3xl animate-pulse">🍛</div>
+        <div class="absolute top-1/2 -right-4 text-3xl animate-bounce">🥟</div>
+        <div class="absolute -bottom-2 left-4 text-3xl animate-pulse">🍢</div>
+        <div class="absolute -bottom-4 -right-1 text-3xl">🧋</div>
+      </div>
+
+      <h2 class="text-3xl sm:text-5xl font-bold font-fredoka text-[#e97d52] tracking-wider mb-2 leading-tight">
+        Kedai Makan Rush
+      </h2>
+      <p class="text-sm sm:text-base font-semibold text-[#8a5d3b] tracking-wide mb-6">
+        Warung Santai Tradisional Malaysia
+      </p>
+
+      <!-- Mode Badge Box -->
+      <div class="bg-[#fff9eb] border-2 border-[#3e2715] rounded-2xl p-4 mb-8 cartoon-shadow max-w-sm">
+        <h3 class="font-fredoka text-base text-[#d85e33] flex items-center justify-center gap-1.5 font-bold mb-1">
+          <span>🟢</span> Mod Santai Aktif (Relax Mode)
+        </h3>
+        <p class="text-xs text-stone-600 leading-relaxed font-medium">
+          Tiada had masa tamat. Pelanggan sabar dan pulang dengan sopan jika lambat. Fokus kepada keseronokan memasak, menghidang, dan mengumpul keuntungan RM100!
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col gap-4 w-full px-4">
+        <button onclick="startGame()" class="w-full py-4 bg-[#8cc63f] hover:bg-[#7db435] text-white font-fredoka text-xl border-4 border-[#3e2715] rounded-2xl cartoon-shadow btn-active-offset transition-all cursor-pointer font-bold tracking-wide">
+          ▶️ Mula Bermain (RM0 ➔ RM100)
+        </button>
+        
+        <button onclick="changeScreen('howto')" class="w-full py-3 bg-[#fcd45c] hover:bg-[#ecc348] text-[#3e2715] font-fredoka text-base border-4 border-[#3e2715] rounded-2xl cartoon-shadow btn-active-offset transition-all cursor-pointer font-bold tracking-normal">
+          📖 Cara Bermain & Tip Menang
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ================= 2. SCREEN: HOW TO PLAY ================= -->
+    <section id="screen-howto" class="hidden flex flex-col max-w-2xl mx-auto py-4 sm:py-8 transition-all duration-300">
+      <div class="bg-white border-4 border-[#3e2715] rounded-3xl p-5 sm:p-8 cartoon-shadow">
+        
+        <!-- Header -->
+        <div class="flex items-center gap-3 border-b-4 border-[#f0dfcc] pb-4 mb-5">
+          <span class="text-3xl">📖</span>
+          <h2 class="text-2xl sm:text-3xl font-fredoka text-[#e97d52] font-semibold">Tugasan Pengusaha Kedai</h2>
+        </div>
+
+        <!-- content steps info -->
+        <ol class="space-y-4 text-sm sm:text-base text-stone-700 font-medium leading-relaxed">
+          <li class="flex gap-3">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[#fde9cd] text-[#e97d52] border-2 border-[#3e2715] flex items-center justify-center font-fredoka font-bold text-xs">1</span>
+            <div>
+              <p class="font-bold text-[#3e2715]">Sediakan Makanan Terlebih Dahulu:</p>
+              <p class="text-xs text-stone-500">Klik butang <span class="font-bold text-[#e97d52]">"Masak"</span> di stesen dapur untuk menyediakan stok makanan sebelum pelanggan tiba. Setiap masakan memerlukan 1 unit bahan mentah.</p>
+            </div>
+          </li>
+
+          <li class="flex gap-3">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[#fde9cd] text-[#e97d52] border-2 border-[#3e2715] flex items-center justify-center font-fredoka font-bold text-xs">2</span>
+            <div>
+              <p class="font-bold text-[#3e2715]">Urus Pelanggan & Hidang:</p>
+              <p class="text-xs text-stone-500">Pelanggan akan duduk di bar kaunter secara perlahan. Klik <span class="font-bold text-[#8cc63f]">"Hidang"</span> pada kerusi pelanggan tersebut jika anda mempunyai stok makanan yang dipesan.</p>
+            </div>
+          </li>
+
+          <li class="flex gap-3">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[#fde9cd] text-[#e97d52] border-2 border-[#3e2715] flex items-center justify-center font-fredoka font-bold text-xs">3</span>
+            <div>
+              <p class="font-bold text-[#3e2715]">Kutip Duit Makan & Dapatkan Tips:</p>
+              <p class="text-xs text-stone-500">Selepas pelanggan selesai makan, ikon duit bouncer <span class="font-bold text-xs text-yellow-600 bg-yellow-100 px-1 rounded">💰 Kutip</span> akan muncul. Klik pada kerusi atau butang untuk kumpul untung RM masuk poket!</p>
+            </div>
+          </li>
+
+          <li class="flex gap-3">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[#fde9cd] text-[#e97d52] border-2 border-[#3e2715] flex items-center justify-center font-fredoka font-bold text-xs">4</span>
+            <div>
+              <p class="font-bold text-[#3e2715]">Beli Bahan Mentah & Kebersihan Kaunter:</p>
+              <p class="text-xs text-stone-500">Jika kehabisan stok bahan mentah, beli semula dengan butang Restock. Kebersihan kaunter penting! Lap kaunter memberikan <span class="text-[#8cc63f] font-bold">Bonus Markah</span> dan mengekalkan tahap kebahagiaan kedai.</p>
+            </div>
+          </li>
+
+          <li class="flex gap-3">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-[#fde9cd] text-[#e97d52] border-2 border-[#3e2715] flex items-center justify-center font-fredoka font-bold text-xs">5</span>
+            <div>
+              <p class="font-bold text-[#3e2715]">Misi Utama:</p>
+              <p class="text-xs text-[#e97d52] font-semibold">Dapatkan kutipan keuntungan sehingga RM100 untuk menaik taraf/menang kedai sepenuhnya!</p>
+            </div>
+          </li>
+        </ol>
+
+        <!-- Back button inside howto -->
+        <div class="mt-8 pt-4 border-t-2 border-stone-200 flex justify-center">
+          <button onclick="changeScreen('menu')" class="px-6 py-3 bg-[#e97d52] hover:bg-[#db6c3f] text-white font-fredoka rounded-xl border-4 border-[#3e2715] cartoon-shadow btn-active-offset transition-all cursor-pointer min-w-[200px] text-center font-bold">
+            ↩️ Kembali ke Menuutama
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= 3. SCREEN: GAMEPLAY SCREEN ================= -->
+    <section id="screen-game" class="hidden flex flex-col gap-5 transition-all duration-300">
+      
+      <!-- ================= STATS CONTROLLERS BOARD ================= -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <!-- Target Goal UI -->
+        <div class="col-span-2 md:col-span-2 bg-[#fffced] border-3 border-[#3e2715] rounded-2xl p-3 flex flex-col justify-between cartoon-shadow-sm min-h-[90px]">
+          <div class="flex items-center justify-between text-xs font-bold text-[#8a5d3b]">
+            <span class="flex items-center gap-1">🎯 Sasaran Keuntungan</span>
+            <span class="text-[#e97d52] bg-orange-100 px-2 py-0.5 rounded-full text-[10px]">RM100</span>
+          </div>
+          <!-- Cash Progress display -->
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-3xl font-fredoka font-bold text-[#3e2715] flex items-center gap-1">
+              <span class="text-2xl text-[#8cc63f]">RM</span><span id="game-cash">15</span>
+            </span>
+            <span class="text-xs font-semibold text-stone-500">/ RM100</span>
+          </div>
+          <!-- Custom Target Progress Bar HTML -->
+          <div class="w-full bg-stone-200 h-2.5 rounded-full mt-2 overflow-hidden border border-[#3e2715]">
+            <div id="cash-progress" class="bg-[#8cc63f] h-full rounded-full transition-all duration-300" style="width: 15%"></div>
+          </div>
+        </div>
+
+        <!-- Score display card -->
+        <div class="bg-[#fffced] border-3 border-[#3e2715] rounded-2xl p-3 flex flex-col justify-center cartoon-shadow-sm">
+          <div class="text-xs font-bold text-[#8a5d3b] flex items-center gap-1 mb-1">
+            <span>⭐ Markah Terkumpul</span>
+          </div>
+          <span id="game-score" class="text-2xl font-fredoka font-extrabold text-[#e97d52]">120</span>
+        </div>
+
+        <!-- Served Customer stats card -->
+        <div class="bg-[#fffced] border-3 border-[#3e2715] rounded-2xl p-3 flex flex-col justify-center cartoon-shadow-sm">
+          <div class="text-xs font-bold text-[#8a5d3b] flex items-center gap-1 mb-1">
+            <span>👥 Dilayan</span>
+          </div>
+          <span id="game-served" class="text-2xl font-fredoka font-bold text-[#3e2715]">0</span>
+        </div>
+
+        <!-- Raw Ingredients Stock display card -->
+        <div class="bg-[#fffced] border-3 border-[#3e2715] rounded-2xl p-3 flex flex-col justify-center cartoon-shadow-sm relative overflow-hidden">
+          <div class="text-xs font-bold text-[#8a5d3b] flex items-center gap-1 mb-1">
+            <span>📦 Bahan Mentah</span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="game-raw-count" class="text-2xl font-fredoka font-extrabold text-[#d85e33]">12</span>
+            <span class="text-xs text-stone-500">unit</span>
+          </div>
+          <button id="noti-low-stock" class="hidden absolute top-1 right-1 px-1.5 py-0.5 rounded bg-red-500 text-white font-fredoka font-bold scale-75 animate-bounce" style="font-size: 8px">RENDAH</button>
+        </div>
+      </div>
+
+      <!-- ================= TWO COLUMN INTERACTIVE SPACE ================= -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        <!-- ================= LEFT COLUMN: CUSTOMERS COUNTER CHAIRS (5 cols) ================= -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <div class="bg-[#f0dfcc] border-4 border-[#3e2715] rounded-3xl p-4 cartoon-shadow relative">
+            <div class="absolute -top-3.5 left-5 px-3 py-1 bg-[#865d36] text-white border-2 border-[#3e2715] rounded-xl text-xs font-fredoka font-semibold">
+              🍽️ Bar Kaunter Pelanggan
+            </div>
+            
+            <!-- Quick Alert Notification for Action Needed -->
+            <div class="text-center font-bold text-xs bg-[#fff9ea] text-[#3e2715] border-2 border-dashed border-[#c6aa8c] p-2 rounded-xl mb-4 mt-3">
+              Mod Santai: Pelanggan tidak memotong markah jika keluar lambat! 😉
+            </div>
+
+            <!-- The Bar counter seats container -->
+            <div class="space-y-4 pt-1">
+              
+              <!-- SEAT 1 -->
+              <div id="seat-0" class="bg-[#fffefa] border-3 border-[#3e2715] rounded-2xl p-3 flex items-center justify-between min-h-[140px] relative transition-all duration-300">
+                <!-- Seating Content dynamically updated via javascript -->
+              </div>
+
+              <!-- SEAT 2 -->
+              <div id="seat-1" class="bg-[#fffefa] border-3 border-[#3e2715] rounded-2xl p-3 flex items-center justify-between min-h-[140px] relative transition-all duration-300">
+                <!-- Seating Content dynamically updated via javascript -->
+              </div>
+
+              <!-- SEAT 3 -->
+              <div id="seat-2" class="bg-[#fffefa] border-3 border-[#3e2715] rounded-2xl p-3 flex items-center justify-between min-h-[140px] relative transition-all duration-300">
+                <!-- Seating Content dynamically updated via javascript -->
+              </div>
+
+            </div>
+
+            <!-- Counter Cleanliness Visual Slider Box -->
+            <div class="mt-4 bg-[#fff1ca] border-2 border-[#3e2715] p-3 rounded-xl flex flex-col gap-1.5 shadow-inner">
+              <div class="flex items-center justify-between text-xs font-bold text-[#3e2715]">
+                <span class="flex items-center gap-1">🧼 Tahap Bersih Kaunter: <span id="val-clean">100</span>%</span>
+                <span id="badge-dirt-status" class="text-[10px] uppercase font-fredoka font-mono text-green-700">BERSIG</span>
+              </div>
+              <div class="w-full bg-[#fceec5] h-3 rounded-full border-2 border-[#3e2715] overflow-hidden relative">
+                <div id="slider-clean" class="bg-gradient-to-r from-blue-300 to-[#10b981] h-full rounded-full transition-all duration-500" style="width: 100%"></div>
+              </div>
+              <div class="flex justify-between items-center gap-2 mt-1">
+                <p class="text-[10px] text-stone-600 leading-tight">Kaunter bersih memberikan <span class="font-bold text-green-700">tip tips tambahan</span> ketika kutip bayaran.</p>
+                <button onclick="cleanCounter()" class="px-3 py-1.5 bg-blue-400 hover:bg-blue-500 text-white font-fredoka font-semibold text-xs border-2 border-[#3e2715] rounded-lg cartoon-shadow-sm btn-active-offset transition-all cursor-pointer flex-shrink-0">
+                  🧹 Lap Kaunter
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Self-lock assist trigger -->
+          <div id="emergency-donation-box" class="hidden bg-orange-100 border-2 border-orange-400 p-3 rounded-xl flex items-center justify-between gap-2 anime-pulse">
+            <div>
+              <p class="text-xs font-bold text-red-700">Dompet Kosong & Tiada Makanan?</p>
+              <p class="text-[10px] text-stone-600">Syarikat derma menawarkan pendermaan bantuan ihsan percuma!</p>
+            </div>
+            <button onclick="claimEmergencyDonation()" class="px-2 py-1 bg-orange-500 hover:bg-orange-600 text-white font-fredoka text-xs rounded border border-[#3e2715] font-bold">
+              Kutip Derma (RM5)
+            </button>
+          </div>
+        </div>
+
+        <!-- ================= RIGHT COLUMN: INTERACTIVE KITCHEN & UPGRADES (7 cols) ================= -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+          
+          <!-- STERE TYCOON INGREDIENT & UPGRADE ROW -->
+          <div class="bg-white border-4 border-[#3e2715] rounded-2xl p-4 cartoon-shadow grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Buy Raw Material Block -->
+            <div class="bg-[#fcf8f0] border-2 border-[#3e2715] p-3 rounded-xl flex flex-col justify-between">
+              <div>
+                <h4 class="font-fredoka font-bold text-[#8a5d3b] text-sm flex items-center gap-1.5">
+                  📥 Pasokan Bahan Mentah
+                </h4>
+                <p class="text-xs text-stone-500 mt-1 leading-snug">Runtuh masakan anda. Beli stok bahan asas mentah untuk membolehkan aktiviti memasak berjalan.</p>
+              </div>
+              <div class="mt-3">
+                <button onclick="restockIngredients()" id="btn-restock" class="w-full py-2 bg-[#fcd45c] hover:bg-[#ecc348] text-[#3e2715] font-fredoka text-xs border-2 border-[#3e2715] rounded-lg cartoon-shadow-sm btn-active-offset transition-all font-bold cursor-pointer">
+                  🛒 Beli +10 Bahan Mentah (RM15)
+                </button>
+              </div>
+            </div>
+
+            <!-- Upgrade Kitchen Station Block -->
+            <div class="bg-[#fcf8f0] border-2 border-[#3e2715] p-3 rounded-xl flex flex-col justify-between">
+              <div>
+                <h4 class="font-fredoka font-bold text-[#8a5d3b] text-sm flex items-center gap-1.5">
+                  🛠️ Naik Taraf Kaunter
+                </h4>
+                <p class="text-xs text-stone-500 mt-1 leading-snug">Naik taraf memudahkan stesen memasak beroperasi <span class="font-bold text-[#8cc63f]">2x ganda lebih laju</span>.</p>
+              </div>
+              <div class="mt-3">
+                <button onclick="buyUpgrade()" id="btn-upgrade" class="w-full py-2 bg-[#8cc63f] hover:bg-[#7bc036] text-white font-fredoka text-xs border-2 border-[#3e2715] rounded-lg cartoon-shadow-sm btn-active-offset transition-all font-bold cursor-pointer">
+                  ⚡ Naik Taraf Stesen (RM50)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- FOOD PRODUCTION STATIONS CONTAINER -->
+          <div class="bg-[#eddcc6] border-4 border-[#3e2715] rounded-3xl p-4 cartoon-shadow relative">
+            <div class="absolute -top-3.5 left-5 px-3 py-1 bg-[#865d36] text-white border-2 border-[#3e2715] rounded-xl text-xs font-fredoka font-semibold">
+              🍳 Stesen Menyediakan Makanan
+            </div>
+
+            <!-- Floating animation guide steam placeholder -->
+            <p class="text-[11px] text-center font-semibold text-[#8a5d3b] mb-3 mt-2">
+              Sediakan makanan terlebih dahulu. Klik <span class="text-[#e97d52] font-bold">Masak 🔥</span> untuk menambah kuantiti yang bersedia dihidang.
+            </p>
+
+            <!-- Food Preparation Grid of 4 elements -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <!-- STATION 1: NASI LEMAK -->
+              <div id="station-nasiLemak" class="bg-white border-3 border-[#3e2715] rounded-2xl p-3 flex flex-col justify-between relative overflow-hidden h-[155px]">
+                <!-- Floating Steam particles if cooking -->
+                <div class="absolute top-2 right-4 text-xs opacity-0 pointer-events-none transition-all duration-300 steam-holder flex gap-0.5">
+                  <span class="steam-particle block">💨</span>
+                  <span class="steam-particle block" style="animation-delay: 0.5s">🔥</span>
+                </div>
+                
+                <!-- Food header details -->
+                <div class="flex items-start gap-2">
+                  <span class="text-4xl">🍛</span>
+                  <div>
+                    <h5 class="font-fredoka font-bold text-[#3e2715] text-base leading-tight">Nasi Lemak</h5>
+                    <p class="text-[10px] text-stone-500 font-semibold">RM10  •  Masa: <span class="cooking-time-info">2.5s</span></p>
+                  </div>
+                </div>
+
+                <!-- Live Pantry Stock counter indicators -->
+                <div class="bg-[#fff8ea] border-2 border-[#3e2715] py-1 px-3.5 rounded-lg flex justify-between items-center my-1.5 shadow-inner">
+                  <span class="text-xs text-[#8a5d3b] font-bold">Pantry Stok:</span>
+                  <span id="stock-nasiLemak" class="font-fredoka text-[#d85e33] font-black text-lg">2</span>
+                </div>
+
+                <!-- Cooking actions controllers -->
+                <div class="space-y-1.5">
+                  <div class="station-progress-container hidden">
+                    <div class="w-full bg-stone-100 h-2 border border-stone-400 rounded-full overflow-hidden">
+                      <div class="station-progress-bar bg-[#e97d52] h-full smooth-progress" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  <button onclick="cookFood('nasiLemak')" class="btn-cook w-full py-1.5 bg-[#e97d52] hover:bg-[#db6c3f] text-white font-fredoka text-xs border-2 border-[#3e2715] rounded-lg cartoon-shadow-sm btn-active-offset transition-all font-bold cursor-pointer">
+                    👨‍🍳 Masak (1 Bahan)
+                  </button>
+                </div>
+              </div>
+
+              <!-- STATION 2: ROTI CANAI -->
+              <div id="station-rotiCanai" class="bg-white border-3 border-[#3e2715] rounded-2xl p-3 flex flex-col justify-between relative overflow-hidden h-[155px]">
+                <div class="absolute top-2 right-4 text-xs opacity-0 pointer-events-none transition-all duration-300 steam-holder flex gap-0.5">
+                  <span class="steam-particle block">💨</span>
+                  <span class="steam-particle block" style="animation-delay: 0.5s">🔥</span>
+                </div>
+
+                <div class="flex items-start gap-2">
+                  <span class="text-4xl">🥟</span>
+                  <div>
+                    <h5 class="font-fredoka font-bold text-[#3e2715] text-base leading-tight">Roti Canai</h5>
+                    <p class="text-[10px] text-stone-500 font-semibold">RM5  •  Masa: <span class="cooking-time-info">1.5s</span></p>
+                  </div>
+                </div>
+
+                <div class="bg-[#fff8ea] border-2 border-[#3e2715] py-1 px-3.5 rounded-lg flex justify-between items-center my-1.5 shadow-inner">
+                  <span class="text-xs text-[#8a5d3b] font-bold">Pantry Stok:</span>
+                  <span id="stock-rotiCanai" class="font-fredoka text-[#d85e33] font-black text-lg">2</span>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="station-progress-container hidden">
+                    <div class="w-full bg-stone-100 h-2 border border-stone-400 rounded-full overflow-hidden">
+                      <div class="station-progress-bar bg-[#e97d52] h-full smooth-progress" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  <button onclick="cookFood('rotiCanai')" class="btn-cook w-full py-1.5 bg-[#e97d52] hover:bg-[#db6c3f] text-white font-fredoka text-xs border-2 border-[#3e2715] rounded-lg cartoon-shadow-sm btn-active-offset transition-all font-bold cursor-pointer">
+                    👨‍🍳 Masak (1 Bahan)
+                  </button>
+                </div>
+              </div>
+
+              <!-- STATION 3: SATAY -->
+              <div id="station-satay" class="bg-white border-3 border-[#3e2715] rounded-2xl p-3 flex flex-col justify-between relative overflow-hidden h-[155px]">
+                <div class="absolute top-2 right-4 text-xs opacity-0 pointer-events-none transition-all duration-300 steam-holder flex gap-0.5">
+                  <span class="steam-particle block">💨</span>
+                  <span class="steam-particle block" style="animation-delay: 0.5s">🔥</span>
+                </div>
+
+                <div class="flex items-start gap-2">
+                  <span class="text-4xl">🍢</span>
+                  <div>
+                    <h5 class="font-fredoka font-bold text-[#3e2715] text-base leading-tight">Satay</h5>
+                    <p class="text-[10px] text-stone-500 font-semibold">RM12  •  Masa: <span class="cooking-time-info">3.5s</span></p>
+                  </div>
+                </div>
+
+                <div class="bg-[#fff8ea] border-2 border-[#3e2715] py-1 px-3.5 rounded-lg flex justify-between items-center my-1.5 shadow-inner">
+                  <span class="text-xs text-[#8a5d3b] font-bold">Pantry Stok:</span>
+                  <span id="stock-satay" class="font-fredoka text-[#d85e33] font-black text-lg">1</span>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="station-progress-container hidden">
+                    <div class="w-full bg-stone-100 h-2 border border-stone-400 rounded-full overflow-hidden">
+                      <div class="station-progress-bar bg-[#e97d52] h-full smooth-progress" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  <button onclick="cookFood('satay')" class="btn-cook w-full py-1.5 bg-[#e97d52] hover:bg-[#db6c3f] text-white font-fredoka text-xs border-2 border-[#3e2715] rounded-lg cartoon-shadow-sm btn-active-offset transition-all font-bold cursor-pointer">
+                    👨‍🍳 Masak (1 Bahan)
+                  </button>
+                </div>
+              </div>
+
+              <!-- STATION 4: AIR KACANG -->
+              <div id="station-airKacang" class="bg-white border-3 border-[#3e2715] rounded-2xl p-3 flex flex-col justify-between relative overflow-hidden h-[155px]">
+                <div class="absolute top-2 right-4 text-xs opacity-0 pointer-events-none transition-all duration-300 steam-holder flex gap-0.5">
+                  <span class="steam-particle block">💨</span>
+                  <span class="steam-particle block" style="animation-delay: 0.5s">🔥</span>
+                </div>
+
+                <div class="flex items-start gap-2">
+                  <span class="text-4xl">🧋</span>
+                  <div>
+                    <h5 class="font-fredoka font-bold text-[#3e2715] text-base leading-tight">Air Kacang</h5>
+                    <p class="text-[10px] text-stone-500 font-semibold">RM6  •  Masa: <span class="cooking-time-info">1.0s</span></p>
+                  </div>
+                </div>
+
+                <div class="bg-[#fff8ea] border-2 border-[#3e2715] py-1 px-3.5 rounded-lg flex justify-between items-center my-1.5 shadow-inner">
+                  <span class="text-xs text-[#8a5d3b] font-bold">Pantry Stok:</span>
+                  <span id="stock-airKacang" class="font-fredoka text-[#d85e33] font-black text-lg">2</span>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="station-progress-container hidden">
+                    <div class="w-full bg-stone-100 h-2 border border-stone-400 rounded-full overflow-hidden">
+                      <div class="station-progress-bar bg-[#e97d52] h-full smooth-progress" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  <button onclick="cookFood('airKacang')" class="btn-cook w-full py-1.5 bg-[#e97d52] hover:bg-[#db6c3f] text-white font-fredoka text-xs border-2 border-[#3e2715] rounded-lg cartoon-shadow-sm btn-active-offset transition-all font-bold cursor-pointer">
+                    👨‍🍳 Masak (1 Bahan)
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ================= 4. SCREEN: WIN SCREEN ================= -->
+    <section id="screen-win" class="hidden flex flex-col items-center justify-center py-6 sm:py-12 max-w-xl mx-auto text-center relative transition-all duration-300">
+      
+      <!-- Overflow confetti container wrapper -->
+      <div id="confetti-container" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+
+      <div class="bg-white border-4 border-[#3e2715] rounded-3xl p-6 sm:p-10 cartoon-shadow w-full z-20">
+        
+        <!-- Big Award visual Trophy -->
+        <div class="text-6xl sm:text-7xl mb-4 animate-bounce-slow flex justify-center">
+          🏆
+        </div>
+
+        <h2 class="text-3xl sm:text-4xl font-bold font-fredoka text-[#8cc63f] leading-normal tracking-wide">
+          Tahniah! Kedai Berjaya!
+        </h2>
+        
+        <p class="text-sm sm:text-base text-stone-600 font-semibold mb-6">
+          Anda telah membuktikan kemahiran keusahawanan makanan yang hebat secara santri dengan mengumpul sasaran RM100 dengan aman!
+        </p>
+
+        <!-- Final Statistics Box -->
+        <div class="bg-[#fcf8f0] border-2 border-[#3e2715] p-4 rounded-2xl mb-8 flex flex-col gap-2.5 max-w-sm mx-auto text-left">
+          <h4 class="font-fredoka text-[#d85e33] font-bold text-center border-b-2 border-stone-200 pb-1.5 text-base">
+            Ringkasan Kedai Anda
+          </h4>
+          <div class="flex justify-between text-xs sm:text-sm font-semibold">
+            <span class="text-stone-500">Jumlah Kutipan Kewangan:</span>
+            <span class="text-[#8cc63f] font-bold">RM <span id="win-cash">100</span></span>
+          </div>
+          <div class="flex justify-between text-xs sm:text-sm font-semibold">
+            <span class="text-stone-500">Markah Kepuasan:</span>
+            <span class="text-[#e1a12d] font-bold" id="win-score">1000</span>
+          </div>
+          <div class="flex justify-between text-xs sm:text-sm font-semibold">
+            <span class="text-stone-500">Pelanggan Selesai Makan:</span>
+            <span class="text-[#3e2715] font-bold" id="win-served">10</span>
+          </div>
+          <div class="flex justify-between text-xs sm:text-sm font-semibold">
+            <span class="text-stone-500">Status Naik Taraf Dapur:</span>
+            <span class="text-blue-500 font-bold" id="win-upgraded">Telah Dipertingkat</span>
+          </div>
+        </div>
+
+        <!-- Restart or back to menu controllers -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center w-full">
+          <button onclick="startGame()" class="px-6 py-4 bg-[#8cc63f] hover:bg-[#7bc036] text-white font-fredoka text-lg border-4 border-[#3e2715] rounded-xl cartoon-shadow btn-active-offset transition-all cursor-pointer font-bold tracking-wide w-full sm:w-auto">
+            🔄 Main Lagi (Set Semula)
+          </button>
+          <button onclick="changeScreen('menu')" class="px-6 py-4 bg-[#e97d52] hover:bg-[#db6c3f] text-white font-fredoka text-lg border-4 border-[#3e2715] rounded-xl cartoon-shadow btn-active-offset transition-all cursor-pointer font-bold tracking-wide w-full sm:w-auto">
+            🏛️ Menu Utama
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================= FOOTER AUTHORSHIP CREDITS ================= -->
+  <footer class="bg-[#3e2715] border-t-2 border-[#1c1109] py-4 w-full">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
+      <p class="text-xs text-[#eedfd2] font-semibold tracking-wide">
+        Food Stall Rush: Mod Santai Urus Pelanggan v1.1.0
+      </p>
+      <p class="text-xs text-[#e97d52] font-semibold tracking-wider font-mono">
+        @Ts. Siti Nurul Ain Saipullizan
+      </p>
+    </div>
+  </footer>
+
+  <!-- ============================================================= -->
+  <!-- =================== GAME ENGINE LOGIC JAVASCRIPT ============ -->
+  <!-- ============================================================= -->
+  <script>
+    // Audio engine using Web Audio API (Fully self-contained, no external dependency)
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSound(type) {
+      if (GAME_STATE.mute) return;
+      try {
+        initAudio();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        
+        const now = audioCtx.currentTime;
+        
+        switch(type) {
+          case 'click': {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(450, now);
+            osc.frequency.exponentialRampToValueAtTime(120, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+            break;
+          }
+          case 'cook': {
+            // Sizzling / Boiling fry sound using simulated synthesized sound noise
+            const bufferSize = audioCtx.sampleRate * 0.45;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+              data[i] = Math.random() * 2 - 1;
+            }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(1100, now);
+            filter.frequency.exponentialRampToValueAtTime(1900, now + 0.35);
+            
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.linearRampToValueAtTime(0.001, now + 0.45);
+            
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            noise.start(now);
+            noise.stop(now + 0.45);
+            
+            // Warm cooking base element
+            const osc = audioCtx.createOscillator();
+            const og = audioCtx.createGain();
+            osc.connect(og);
+            og.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+            og.gain.setValueAtTime(0.12, now);
+            og.gain.linearRampToValueAtTime(0.001, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+            break;
+          }
+          case 'serve': {
+            // Sweet retro dual chime chord
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc1.type = 'sine';
+            osc2.type = 'sine';
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc1.frequency.setValueAtTime(587.33, now); // D5
+            osc1.frequency.exponentialRampToValueAtTime(880.00, now + 0.3); // A5
+            osc2.frequency.setValueAtTime(698.46, now); // F5
+            osc2.frequency.exponentialRampToValueAtTime(1046.50, now + 0.3); // C6
+            
+            gain.gain.setValueAtTime(0.0, now);
+            gain.gain.linearRampToValueAtTime(0.12, now + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+            osc1.start(now);
+            osc1.stop(now + 0.5);
+            osc2.start(now);
+            osc2.stop(now + 0.5);
+            break;
+          }
+          case 'cash': {
+            // Cash box payout ringing
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(987.77, now); // B5
+            osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            osc.start(now);
+            osc.stop(now + 0.4);
+            break;
+          }
+          case 'clean': {
+            // Sweep wipe swipe
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(100, now);
+            osc.frequency.exponentialRampToValueAtTime(380, now + 0.18);
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.linearRampToValueAtTime(0.001, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+            break;
+          }
+          case 'restock': {
+            // Drop bounce sound
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(250, now);
+            osc.frequency.exponentialRampToValueAtTime(380, now + 0.15);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.linearRampToValueAtTime(0.001, now + 0.15);
+            osc.start(now);
+            osc.stop(now + 0.15);
+            break;
+          }
+          case 'upgrade': {
+            const notes = [261.63, 311.13, 392.00, 523.25, 622.25]; // Minor/Major happy progression
+            notes.forEach((freq, idx) => {
+              const osc = audioCtx.createOscillator();
+              const gain = audioCtx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+              gain.gain.setValueAtTime(0.0, now);
+              gain.gain.linearRampToValueAtTime(0.08, now + idx * 0.07 + 0.02);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.25);
+              osc.connect(gain);
+              gain.connect(audioCtx.destination);
+              osc.start(now + idx * 0.07);
+              osc.stop(now + idx * 0.07 + 0.25);
+            });
+            break;
+          }
+          case 'arrive': {
+            // Soft friendly pop
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.exponentialRampToValueAtTime(392, now + 0.15);
+            gain.gain.setValueAtTime(0.0, now);
+            gain.gain.linearRampToValueAtTime(0.12, now + 0.03);
+            gain.gain.linearRampToValueAtTime(0.001, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+            break;
+          }
+          case 'leave_polite': {
+            // Sliding exit synth
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.linearRampToValueAtTime(150, now + 0.35);
+            gain.gain.setValueAtTime(0.07, now);
+            gain.gain.linearRampToValueAtTime(0.001, now + 0.35);
+            osc.start(now);
+            osc.stop(now + 0.35);
+            break;
+          }
+          case 'win': {
+            // Glorious fanfares
+            const baseNotes = [523.25, 659.25, 783.99, 1046.50];
+            baseNotes.forEach((freq, idx) => {
+              const osc = audioCtx.createOscillator();
+              const gain = audioCtx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+              gain.gain.setValueAtTime(0.0, now);
+              gain.gain.linearRampToValueAtTime(0.1, now + idx * 0.09 + 0.03);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.5);
+              osc.connect(gain);
+              gain.connect(audioCtx.destination);
+              osc.start(now + idx * 0.09);
+              osc.stop(now + idx * 0.09 + 0.5);
+            });
+            break;
+          }
+        }
+      } catch (err) {
+        console.error("Audio error skipped: ", err);
+      }
+    }
+
+    // Toggle mute UI
+    function toggleMute() {
+      GAME_STATE.mute = !GAME_STATE.mute;
+      const btn = document.getElementById('btn-audio');
+      btn.innerText = GAME_STATE.mute ? '🔇' : '🔊';
+      playSound('click');
+    }
+
+    // =============================================================
+    // ======================== STATE DATA =========================
+    // =============================================================
+    const FOOD_STATION_CONFIGS = {
+      nasiLemak: { id: 'nasiLemak', name: 'Nasi Lemak', icon: '🍛', price: 10, prepCostLimit: 3, prepTime: 2500 },
+      rotiCanai: { id: 'rotiCanai', name: 'Roti Canai', icon: '🥟', price: 5, prepCostLimit: 1.5, prepTime: 1500 },
+      satay: { id: 'satay', name: 'Satay', icon: '🍢', price: 12, prepCostLimit: 4, prepTime: 3500 },
+      airKacang: { id: 'airKacang', name: 'Air Kacang', icon: '🧋', price: 6, prepCostLimit: 2, prepTime: 1000 }
+    };
+
+    const CUSTOMER_PROFILES = [
+      { name: "Kak Siti", emoji: "👵" },
+      { name: "Uncle Raju", emoji: "👳" },
+      { name: "Abang Lim", emoji: "👨" },
+      { name: "Adik Aisyah", emoji: "👧" },
+      { name: "Mak Cik Aminah", emoji: "👩" },
+      { name: "Sathish", emoji: "👱" },
+      { name: "Sarah", emoji: "🧑" },
+      { name: "Ah Beng", emoji: "👦" },
+      { name: "Pak Cik Latip", emoji: "👴" }
+    ];
+
+    let GAME_STATE = {
+      screen: 'menu', 
+      score: 0,
+      cash: 15, // Starts with RM 15 so player can cook even without immediate guest actions
+      customersServed: 0,
+      highScore: parseInt(localStorage.getItem('food_stall_rush_high_score') || '0'),
+      targetCash: 100,
+      rawIngredients: 12, // Starting amount of base inventory
+      counterCleanliness: 100, // percentage cleanliness
+      upgraded: false, // upgrades cooking speeds x2 Fast
+      
+      // Dynamic operational counters
+      stocks: {
+        nasiLemak: 2,
+        rotiCanai: 2,
+        satay: 1,
+        airKacang: 2
+      },
+      cookingTimers: {
+        nasiLemak: { active: false, current: 0, max: 2500 },
+        rotiCanai: { active: false, current: 0, max: 1500 },
+        satay: { active: false, current: 0, max: 3500 },
+        airKacang: { active: false, current: 0, max: 1000 }
+      },
+
+      // Seats Counter Allocation Tracker
+      seats: [null, null, null],
+
+      mute: false,
+      gameLoopTimer: null
+    };
+
+    // Initialize display values on bootup
+    document.getElementById('best-score').innerText = GAME_STATE.highScore;
+
+    // ======================== NAVIGATION SWITCHES =================
+    function changeScreen(targetScreenName) {
+      playSound('click');
+      document.getElementById('screen-menu').classList.add('hidden');
+      document.getElementById('screen-howto').classList.add('hidden');
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('screen-win').classList.add('hidden');
+
+      const targetEl = document.getElementById(`screen-${targetScreenName}`);
+      if (targetEl) {
+        targetEl.classList.remove('hidden');
+      }
+      GAME_STATE.screen = targetScreenName;
+    }
+
+    // =============================================================
+    // ======================== GAMEPLAY SETUP =====================
+    // =============================================================
+    function startGame() {
+      // Setup initial variables
+      GAME_STATE.score = 0;
+      GAME_STATE.cash = 15;
+      GAME_STATE.customersServed = 0;
+      GAME_STATE.rawIngredients = 12;
+      GAME_STATE.counterCleanliness = 100;
+      GAME_STATE.upgraded = false;
+
+      // Reset stock assets to helpful starting counts
+      GAME_STATE.stocks.nasiLemak = 2;
+      GAME_STATE.stocks.rotiCanai = 2;
+      GAME_STATE.stocks.satay = 1;
+      GAME_STATE.stocks.airKacang = 2;
+
+      // Clear operational cook parameters
+      for (let key in GAME_STATE.cookingTimers) {
+        GAME_STATE.cookingTimers[key].active = false;
+        GAME_STATE.cookingTimers[key].current = 0;
+      }
+
+      // Reset seat arrays
+      GAME_STATE.seats = [null, null, null];
+
+      // Refresh configs
+      updateKitchenFrequenciesDisplay();
+
+      // Change Screen View
+      changeScreen('game');
+      playSound('upgrade');
+
+      // Boot clean visual rendering cycles
+      renderAllPlayboard();
+
+      // Launch automated Loop process
+      if (GAME_STATE.gameLoopTimer) {
+        clearInterval(GAME_STATE.gameLoopTimer);
+      }
+
+      let lastTime = Date.now();
+      let customerSpawnAccumulator = 0;
+
+      // Main Interval Core loop
+      GAME_STATE.gameLoopTimer = setInterval(() => {
+        if (GAME_STATE.screen !== 'game') return;
+
+        const currentNow = Date.now();
+        const delta = currentNow - lastTime;
+        lastTime = currentNow;
+
+        // 1. Progress active cooking timers
+        let kitchenUpdated = false;
+        for (let key in GAME_STATE.cookingTimers) {
+          const timer = GAME_STATE.cookingTimers[key];
+          if (timer.active) {
+            timer.current += delta;
+            
+            // Scaled max time depends on whether stove is upgraded
+            const actualMax = GAME_STATE.upgraded ? (timer.max / 2) : timer.max;
+            let percentDone = Math.min((timer.current / actualMax) * 100, 100);
+
+            // Access DOM progress elements directly for fast updates
+            const stationCard = document.getElementById(`station-${key}`);
+            if (stationCard) {
+              const pBar = stationCard.querySelector('.station-progress-bar');
+              if (pBar) pBar.style.width = `${percentDone}%`;
+            }
+
+            if (timer.current >= actualMax) {
+              // Cook completed!
+              timer.active = false;
+              timer.current = 0;
+              GAME_STATE.stocks[key] += 1;
+              playSound('restock');
+              kitchenUpdated = true;
+            }
+          }
+        }
+
+        if (kitchenUpdated) {
+          renderKitchenStocksOnly();
+        }
+
+        // 2. Slow down counter cleanliness over time
+        // Cleanliness drops very gently by 0.5% per second
+        GAME_STATE.counterCleanliness = Math.max(GAME_STATE.counterCleanliness - (0.0005 * delta), 0);
+        updateCleanlinessBarUI();
+
+        // 3. Keep customer patience ticking down
+        let patientUpdateNeeded = false;
+        for (let i = 0; i < GAME_STATE.seats.length; i++) {
+          const cust = GAME_STATE.seats[i];
+          if (cust) {
+            if (cust.status === 'waiting') {
+              // Patience decays. In Mod Santai, they are super patient!
+              // Standard patience lasts ~110 seconds!
+              cust.patience -= (0.01 * delta); 
+              if (cust.patience <= 0) {
+                // Patience runs out! In Mod Santai, they leave politely with no penalty
+                cust.patience = 0;
+                playSound('leave_polite');
+                triggerNotificationBubble(i, "Saya gerak dulu ya, terima kasih banyak!");
+                setTimeout(() => {
+                  if (GAME_STATE.seats[i] === cust) {
+                    GAME_STATE.seats[i] = null;
+                    renderSeatsOnly();
+                  }
+                }, 3000);
+                cust.status = 'leaving';
+                patientUpdateNeeded = true;
+              } else {
+                patientUpdateNeeded = true;
+              }
+            } else if (cust.status === 'eating') {
+              cust.eatProgress += delta;
+              if (cust.eatProgress >= 3000) {
+                // Done eating! Time to pay
+                cust.status = 'done';
+                cust.eatProgress = 3000;
+                playSound('arrive'); // chime alert for coins
+                patientUpdateNeeded = true;
+              } else {
+                patientUpdateNeeded = true;
+              }
+            }
+          }
+        }
+
+        if (patientUpdateNeeded) {
+          updateSeatPatiencesAndBarsOnly();
+        }
+
+        // 4. Handle auto spawning of new customers slowly
+        // Spawns a customer every 8 - 12 seconds if seat is empty
+        customerSpawnAccumulator += delta;
+        if (customerSpawnAccumulator >= 8500) {
+          customerSpawnAccumulator = 0;
+          attemptSpawnCustomer();
+        }
+
+        // Check for self-lock prevention display helper
+        checkEmergencySoftlockConditions();
+
+      }, 100);
+    }
+
+    // =============================================================
+    // ======================== RENDER MECHANICS ===================
+    // =============================================================
+    function renderAllPlayboard() {
+      // General Statistics Updates
+      document.getElementById('game-cash').innerText = Math.round(GAME_STATE.cash);
+      document.getElementById('game-score').innerText = GAME_STATE.score;
+      document.getElementById('game-served').innerText = GAME_STATE.customersServed;
+      document.getElementById('game-raw-count').innerText = GAME_STATE.rawIngredients;
+
+      // Update cash slider bar width
+      const percentage = Math.min((GAME_STATE.cash / GAME_STATE.targetCash) * 100, 100);
+      document.getElementById('cash-progress').style.width = `${percentage}%`;
+
+      // Update Stock counts
+      renderKitchenStocksOnly();
+
+      // Render Seats
+      renderSeatsOnly();
+
+      // Cleanliness
+      updateCleanlinessBarUI();
+
+      // Enable/Disable Upgrades active status
+      updateUpgradeButtonsStatus();
+    }
+
+    function renderKitchenStocksOnly() {
+      for (let foodKey in FOOD_STATION_CONFIGS) {
+        document.getElementById(`stock-${foodKey}`).innerText = GAME_STATE.stocks[foodKey];
+        // Handle Cook button loading disabling states
+        const timerObj = GAME_STATE.cookingTimers[foodKey];
+        const stationCard = document.getElementById(`station-${foodKey}`);
+        if (stationCard) {
+          const cookBtn = stationCard.querySelector('.btn-cook');
+          const progressContainer = stationCard.querySelector('.station-progress-container');
+          const steamHolder = stationCard.querySelector('.steam-holder');
+
+          if (timerObj.active) {
+            cookBtn.disabled = true;
+            cookBtn.classList.add('opacity-40', 'cursor-not-allowed');
+            cookBtn.innerText = '🍳 Membakar...';
+            progressContainer.classList.remove('hidden');
+            steamHolder.classList.remove('opacity-0');
+          } else {
+            cookBtn.disabled = false;
+            cookBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+            cookBtn.innerText = '👨‍🍳 Masak (1 Bahan)';
+            progressContainer.classList.add('hidden');
+            steamHolder.classList.add('opacity-0');
+          }
+        }
+      }
+    }
+
+    function renderSeatsOnly() {
+      for (let i = 0; i < 3; i++) {
+        const seatDiv = document.getElementById(`seat-${i}`);
+        const guestData = GAME_STATE.seats[i];
+
+        if (!guestData) {
+          // Empty stool representation
+          seatDiv.innerHTML = `
+            <div class="w-full flex flex-col items-center justify-center text-center text-stone-400 py-3 select-none">
+              <span class="text-3xl opacity-30 mb-1">🪑</span>
+              <p class="text-[10px] uppercase tracking-wider font-extrabold font-fredoka">Kerusi Kosong</p>
+              <p class="text-[9px] text-stone-400">Menunggu tetamu makan...</p>
+            </div>
+          `;
+          seatDiv.className = "bg-[#fffefa] border-3 border-dashed border-stone-300 rounded-2xl p-3 flex items-center justify-between min-h-[140px] relative transition-all duration-300";
+        } else {
+          // Filled customer seat layout
+          const orderedFood = FOOD_STATION_CONFIGS[guestData.order];
+          let statusOverlayHTML = '';
+          let primaryBtnHTML = '';
+
+          // Assign correct UI components based on Customer states
+          if (guestData.status === 'waiting') {
+            const hasPlentifulProductStock = GAME_STATE.stocks[guestData.order] > 0;
+            const liveStockCount = GAME_STATE.stocks[guestData.order];
+            primaryBtnHTML = `
+              <button onclick="serveCustomerIndex(${i})" class="w-full py-2 px-3 ${hasPlentifulProductStock ? 'bg-[#8cc63f] hover:bg-[#7db435] text-white animate-pulse-gently' : 'bg-gray-200 text-gray-500 cursor-not-allowed'} font-fredoka text-xs border-2 border-[#3e2715] rounded-xl cartoon-shadow-sm btn-active-offset transition-all font-bold cursor-pointer">
+                🍔 Hidang ${orderedFood.icon} 
+                <span class="block text-[8px] opacity-90">${hasPlentifulProductStock ? `(Mempunyai ${liveStockCount})` : '(Tiada Stok!)'}</span>
+              </button>
+            `;
+            statusOverlayHTML = `
+              <div class="flex flex-col items-center justify-center bg-stone-100 border-2 border-[#3e2715] px-2.5 py-1 rounded-full text-[10px] font-extrabold text-[#3e2715]">
+                <span>Menunggu ⏱️</span>
+              </div>
+            `;
+          } else if (guestData.status === 'eating') {
+            const percentEating = Math.min((guestData.eatProgress / 3000) * 100, 100);
+            primaryBtnHTML = `
+              <div class="text-center w-full bg-orange-50 border-2 border-[#3e2715] p-2 rounded-xl">
+                <p class="text-[10px] font-fredoka font-bold text-[#e97d52] flex items-center justify-center gap-1">
+                  😋 Sedang Makan <span class="animate-bounce">🍜</span>
+                </p>
+                <div class="w-full bg-stone-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                  <div class="bg-[#e97d52] h-full" style="width: ${percentEating}%"></div>
+                </div>
+              </div>
+            `;
+            statusOverlayHTML = `
+              <div class="flex flex-col items-center justify-center bg-orange-100 border-2 border-[#3e2715] px-2.5 py-1 rounded-full text-[10px] font-bold text-orange-800">
+                <span>Mengunyah...</span>
+              </div>
+            `;
+          } else if (guestData.status === 'done') {
+            primaryBtnHTML = `
+              <button onclick="collectPaymentFromSeat(${i})" class="w-full py-2.5 px-3 bg-[#fcd45c] hover:bg-[#ecc348] text-[#3e2715] font-fredoka text-xs border-2 border-green-700 animate-bounce rounded-xl cartoon-shadow-sm btn-active-offset transition-all font-black cursor-pointer shadow-lg">
+                💰 Kutip RM${orderedFood.price} !
+              </button>
+            `;
+            statusOverlayHTML = `
+              <div class="absolute -top-3 -right-3 animate-bounce bg-[#fff4ca] border-2 border-green-600 rounded-full w-9 h-9 flex items-center justify-center text-lg shadow-lg">
+                💵
+              </div>
+            `;
+          } else if (guestData.status === 'leaving') {
+            primaryBtnHTML = `
+              <p class="text-xs text-stone-400 font-bold italic text-center w-full">👋 Melambai pulang...</p>
+            `;
+            statusOverlayHTML = `
+              <div class="flex flex-col items-center justify-center bg-stone-300 border border-stone-400 px-2.5 py-1 rounded-full text-[10px] text-stone-600">
+                <span>Pulang</span>
+              </div>
+            `;
+          }
+
+          seatDiv.innerHTML = `
+            <!-- Left Info block containing Avatar and bubble order -->
+            <div class="flex items-center gap-2.5 max-w-[65%]">
+              
+              <!-- Avatar visual -->
+              <div class="flex flex-col items-center select-none text-center">
+                <span class="text-4xl filter drop-shadow">${guestData.emoji}</span>
+                <span class="text-[9px] font-extrabold text-[#8a5d3b] bg-white border border-[#3e2715] px-1 rounded-md mt-1 leading-tight">${guestData.name}</span>
+              </div>
+
+              <!-- Thought Bubble element -->
+              <div class="bg-white border-2 border-[#3e2715] p-2 rounded-xl relative flex items-center gap-1.5 cartoon-shadow-sm">
+                <span class="text-xs text-stone-500 font-bold">Mahu:</span>
+                <span class="text-2xl" title="${orderedFood.name}">${orderedFood.icon}</span>
+                <!-- triangle notch decoration -->
+                <div class="absolute top-1/2 -left-1.5 w-2 h-2 bg-white border-b-2 border-l-2 border-[#3e2715] rotate-45 transform -translate-y-1/2"></div>
+              </div>
+
+            </div>
+
+            <!-- Right interactive button controllers -->
+            <div class="flex flex-col items-end gap-2 w-[110px]">
+              ${statusOverlayHTML}
+
+              <!-- Patience Bar Display -->
+              <div class="w-full patience-div ${guestData.status === 'waiting' ? '' : 'opacity-20'}">
+                <div class="flex justify-between text-[8px] font-bold text-stone-500 mb-0.5">
+                  <span>Sabar:</span>
+                  <span class="val-patience-text">${Math.round(guestData.patience)}%</span>
+                </div>
+                <div class="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden border border-stone-300">
+                  <div class="patience-fill bg-green-500 h-full" style="width: ${guestData.patience}%"></div>
+                </div>
+              </div>
+
+              ${primaryBtnHTML}
+            </div>
+
+            <!-- Custom absolute notifications popup bubble helper -->
+            <div class="noti-bubble absolute -top-5 left-12 bg-white border-2 border-[#e97d52] px-2 py-1.5 rounded-xl shadow-lg z-20 text-[10px] font-bold text-[#3e2715] hidden max-w-[150px]">
+              Annyeong!
+            </div>
+          `;
+
+          // Adjust card color highlight based on client state
+          if (guestData.status === 'waiting') {
+            seatDiv.className = "bg-white border-3 border-[#3e2715] rounded-2xl p-3 flex items-center justify-between min-h-[140px] relative transition-all duration-300";
+          } else if (guestData.status === 'eating') {
+            seatDiv.className = "bg-[#fcfbee] border-3 border-orange-200 rounded-2xl p-3 flex items-center justify-between min-h-[140px] relative transition-all duration-300";
+          } else if (guestData.status === 'done') {
+            seatDiv.className = "bg-[#fffdeb] border-3 border-yellow-400 rounded-2xl p-3 flex items-center justify-between min-h-[140px] relative transition-all duration-300 shadow-md";
+          } else {
+            seatDiv.className = "bg-stone-50 border-3 border-stone-200 opacity-60 rounded-2xl p-3 flex items-center justify-between min-h-[140px] relative transition-all; duration-300";
+          }
+        }
+      }
+    }
+
+    // Direct updating of progress patience fills to save performance repaint overhead
+    function updateSeatPatiencesAndBarsOnly() {
+      for (let i = 0; i < 3; i++) {
+        const guestData = GAME_STATE.seats[i];
+        if (guestData) {
+          const seatDiv = document.getElementById(`seat-${i}`);
+          if (seatDiv) {
+            // Update Patience progress indicator
+            const pText = seatDiv.querySelector('.val-patience-text');
+            const pFill = seatDiv.querySelector('.patience-fill');
+            if (pText && pFill) {
+              pText.innerText = `${Math.round(guestData.patience)}%`;
+              pFill.style.width = `${guestData.patience}%`;
+
+              // Dynamically colorize the patience bar
+              if (guestData.patience > 50) {
+                pFill.className = "patience-fill bg-green-500 h-full transition-all";
+              } else if (guestData.patience > 20) {
+                pFill.className = "patience-fill bg-yellow-500 h-full transition-all";
+              } else {
+                pFill.className = "patience-fill bg-red-400 h-full transition-all";
+              }
+            }
+
+            // If a client completed eating session but rendering status was not fully refreshed, triggers complete redrawing
+            if (guestData.status === 'done' || guestData.status === 'leaving') {
+              renderSeatsOnly();
+            }
+          }
+        }
+      }
+    }
+
+    function updateCleanlinessBarUI() {
+      const cleanliness = Math.round(GAME_STATE.counterCleanliness);
+      const valEl = document.getElementById('val-clean');
+      const sliderEl = document.getElementById('slider-clean');
+      const badgeEl = document.getElementById('badge-dirt-status');
+
+      if (valEl) valEl.innerText = cleanliness;
+      if (sliderEl) {
+        sliderEl.style.width = `${cleanliness}%`;
+        // Color transition
+        if (cleanliness > 75) {
+          sliderEl.className = "bg-[#10b981] h-full rounded-full transition-all duration-500";
+          badgeEl.innerText = 'BERSIH 💚';
+          badgeEl.className = "text-[10px] uppercase font-fredoka font-mono text-[#10b981]";
+        } else if (cleanliness > 35) {
+          sliderEl.className = "bg-yellow-400 h-full rounded-full transition-all duration-500";
+          badgeEl.innerText = 'BIASA ⚠️';
+          badgeEl.className = "text-[10px] uppercase font-fredoka font-mono text-yellow-600";
+        } else {
+          sliderEl.className = "bg-red-400 h-full rounded-full transition-all duration-500";
+          badgeEl.innerText = 'KOTOR 🧹';
+          badgeEl.className = "text-[10px] uppercase font-fredoka font-mono text-red-500 animate-pulse";
+        }
+      }
+    }
+
+    function updateUpgradeButtonsStatus() {
+      const btnRestock = document.getElementById('btn-restock');
+      const btnUpgrade = document.getElementById('btn-upgrade');
+
+      // Restock checking
+      if (GAME_STATE.cash >= 15) {
+        btnRestock.disabled = false;
+        btnRestock.className = "w-full py-2 bg-[#fcd45c] hover:bg-[#ecc348] text-[#3e2715] font-fredoka text-xs border-2 border-[#3e2715] rounded-lg cartoon-shadow-sm btn-active-offset transition-all font-bold cursor-pointer";
+      } else {
+        btnRestock.disabled = true;
+        btnRestock.className = "w-full py-2 bg-stone-200 text-stone-400 font-fredoka text-xs border-2 border-stone-300 rounded-lg transition-all font-bold cursor-not-allowed";
+      }
+
+      // Upgrade checks
+      if (GAME_STATE.upgraded) {
+        btnUpgrade.disabled = true;
+        btnUpgrade.innerText = "⚡ Dinaik Taraf (Max)";
+        btnUpgrade.className = "w-full py-2 bg-[#e2f3d3] text-[#7dc036] font-fredoka text-xs border-2 border-dashed border-[#7bc036] rounded-lg transition-all font-bold cursor-not-allowed";
+      } else {
+        if (GAME_STATE.cash >= 50) {
+          btnUpgrade.disabled = false;
+          btnUpgrade.className = "w-full py-2 bg-[#8cc63f] hover:bg-[#7bc036] text-white font-fredoka text-xs border-2 border-[#3e2715] rounded-lg cartoon-shadow-sm btn-active-offset transition-all font-bold cursor-pointer animate-pulse-gently";
+        } else {
+          btnUpgrade.disabled = true;
+          btnUpgrade.className = "w-full py-2 bg-stone-200 text-stone-400 font-fredoka text-xs border-2 border-stone-300 rounded-lg transition-all font-bold cursor-not-allowed";
+        }
+      }
+    }
+
+    function updateKitchenFrequenciesDisplay() {
+      // Modify displayed time indicator dynamically if upgraded
+      for (let foodKey in FOOD_STATION_CONFIGS) {
+        const config = FOOD_STATION_CONFIGS[foodKey];
+        const stationCard = document.getElementById(`station-${foodKey}`);
+        if (stationCard) {
+          const timeLabel = stationCard.querySelector('.cooking-time-info');
+          if (timeLabel) {
+            const actualSec = GAME_STATE.upgraded ? (config.prepTime / 2000) : (config.prepTime / 1000);
+            timeLabel.innerText = `${actualSec.toFixed(1)}s`;
+          }
+        }
+      }
+    }
+
+    // =============================================================
+    // ======================== ACTIONS / TRIGGERS =================
+    // =============================================================
+    
+    // Cook / Prepare button triggers
+    function cookFood(stationKey) {
+      const timer = GAME_STATE.cookingTimers[stationKey];
+      if (timer.active) return; // Busy cooking
+
+      // Ingredients Check
+      if (GAME_STATE.rawIngredients <= 0) {
+        playSound('click');
+        alert("Bahan mentah tidak mencukupi! Sila restock bahan mentah terlebih dahulu.");
+        return;
+      }
+
+      // Deduct materials
+      GAME_STATE.rawIngredients -= 1;
+      document.getElementById('game-raw-count').innerText = GAME_STATE.rawIngredients;
+
+      // Start cook timer progress
+      timer.active = true;
+      timer.current = 0;
+      playSound('cook');
+
+      renderKitchenStocksOnly();
+      renderSeatsOnly(); // refresh servable highlights
+    }
+
+    // Serving action triggers
+    function serveCustomerIndex(seatIdx) {
+      playSound('click');
+      const cust = GAME_STATE.seats[seatIdx];
+      if (!cust || cust.status !== 'waiting') return;
+
+      // Checking pantry stock availability
+      const neededFoodKey = cust.order;
+      if (GAME_STATE.stocks[neededFoodKey] <= 0) {
+        alert(`Bahan bersedia makanan ${FOOD_STATION_CONFIGS[neededFoodKey].name} tiada! Sila masak stesen dahulu.`);
+        return;
+      }
+
+      // Consume pantry stock
+      GAME_STATE.stocks[neededFoodKey] -= 1;
+      playSound('serve');
+
+      // Update customer state
+      cust.status = 'eating';
+      cust.eatProgress = 0;
+
+      // Re-render
+      renderAllPlayboard();
+      triggerNotificationBubble(seatIdx, "Wah, terima kasih! Nampak sangat sedap! 😋");
+    }
+
+    // Payout cash collections
+    function collectPaymentFromSeat(seatIdx) {
+      const cust = GAME_STATE.seats[seatIdx];
+      if (!cust || cust.status !== 'done') return;
+
+      const orderConfig = FOOD_STATION_CONFIGS[cust.order];
+      let finalPrice = orderConfig.price;
+
+      // Cleanliness Multiplier & Tips calculation
+      // Cleanliness > 80 gives +15% tip. Cleanliness < 30 drops price by -10% due to dust
+      let tipDescription = '';
+      if (GAME_STATE.counterCleanliness >= 80) {
+        finalPrice = finalPrice * 1.15;
+        tipDescription = " (+15% tip kaunter bersih ✨)";
+      } else if (GAME_STATE.counterCleanliness < 30) {
+        finalPrice = finalPrice * 0.9;
+        tipDescription = " (-10% denda habuk kotor 🧹)";
+      }
+
+      finalPrice = Math.round(finalPrice);
+
+      // Reward player
+      GAME_STATE.cash += finalPrice;
+      const earningsScore = finalPrice * 20;
+      GAME_STATE.score += earningsScore;
+      GAME_STATE.customersServed += 1;
+
+      playSound('cash');
+
+      // Wipe client seat empty
+      GAME_STATE.seats[seatIdx] = null;
+
+      // Subtly soil the counter after eating (drops cleanliness by 15%)
+      GAME_STATE.counterCleanliness = Math.max(GAME_STATE.counterCleanliness - 12, 0);
+
+      // Generate floating coin cosmetic elements above current clicked cursor
+      createFloatingPointLabel(`+RM${finalPrice}`, event);
+
+      // Refresh layout data
+      renderAllPlayboard();
+
+      // Check win criteria condition (RM100 collected target)
+      setTimeout(() => {
+        checkWinCondition();
+      }, 500);
+    }
+
+    // Restock base ingredients
+    function restockIngredients() {
+      if (GAME_STATE.cash < 15) {
+        playSound('click');
+        alert("Wang kutipan RM anda tidak mencukupi untuk membeli bekalan!");
+        return;
+      }
+
+      GAME_STATE.cash -= 15;
+      GAME_STATE.rawIngredients += 10;
+      playSound('restock');
+
+      renderAllPlayboard();
+    }
+
+    // Kitchen stove speed upgrading triggers
+    function buyUpgrade() {
+      if (GAME_STATE.upgraded) return;
+      if (GAME_STATE.cash < 50) {
+        playSound('click');
+        alert("Wang kutipan RM terkumpul tidak mencukupi (Memerlukan RM50)!");
+        return;
+      }
+
+      GAME_STATE.cash -= 50;
+      GAME_STATE.upgraded = true;
+      playSound('upgrade');
+
+      updateKitchenFrequenciesDisplay();
+      renderAllPlayboard();
+    }
+
+    // Wipe cleans counter actions
+    function cleanCounter() {
+      playSound('clean');
+      
+      const previousValue = GAME_STATE.counterCleanliness;
+      GAME_STATE.counterCleanliness = 100;
+      
+      // Bonus score rewarded only if they did clean considerable dirt
+      if (previousValue < 85) {
+        GAME_STATE.score += 25;
+        createFloatingPointLabel(`+25 Markah Kebersihan 🧹`, event);
+      }
+
+      // Mod Santai Safety system: if they are completely dry (< RM3) and has some dirt, gives +RM3 tip upah
+      if (GAME_STATE.cash < 5 && GAME_STATE.rawIngredients === 0) {
+        // Double check no pantry stock exists
+        let hasPantryStock = false;
+        for (let key in GAME_STATE.stocks) {
+          if (GAME_STATE.stocks[key] > 0) hasPantryStock = true;
+        }
+
+        if (!hasPantryStock) {
+          GAME_STATE.cash += 3;
+          createFloatingPointLabel(`+RM3 Upah Lap Kaunter 💵`, event);
+        }
+      }
+
+      renderAllPlayboard();
+    }
+
+    // Claim Emergency Relief Donation (Ensures 0% softlock and maximum cozy gameplay)
+    function claimEmergencyDonation() {
+      playSound('upgrade');
+      GAME_STATE.cash += 5;
+      GAME_STATE.rawIngredients += 3;
+      renderAllPlayboard();
+      alert("🎁 Pembantu Kebajikan Warung memberi anda bantuan RM5 & 3 Bahan Mentah secara ikhlas!");
+    }
+
+    // Check emergency conditions
+    function checkEmergencySoftlockConditions() {
+      const emergencyBox = document.getElementById('emergency-donation-box');
+      
+      // Softlock criteria: no raw ingredients, low money to buy stock, and no pantry food items left to serve
+      let totalPantryStockValue = 0;
+      for (let key in GAME_STATE.stocks) {
+        totalPantryStockValue += GAME_STATE.stocks[key];
+      }
+
+      if (GAME_STATE.rawIngredients === 0 && GAME_STATE.cash < 15 && totalPantryStockValue === 0) {
+        emergencyBox.classList.remove('hidden');
+      } else {
+        emergencyBox.classList.add('hidden');
+      }
+    }
+
+    // =============================================================
+    // ======================== AUXILIARY FUNCTIONS=================
+    // =============================================================
+    
+    // Spawns new clients slowly
+    function attemptSpawnCustomer() {
+      // Collect seats currently free
+      const freeSeatsIdx = [];
+      for (let i = 0; i < GAME_STATE.seats.length; i++) {
+        if (!GAME_STATE.seats[i]) freeSeatsIdx.push(i);
+      }
+
+      if (freeSeatsIdx.length === 0) return; // Counter fully occupied
+
+      // Choose random vacant seat
+      const randomVacantIdx = freeSeatsIdx[Math.floor(Math.random() * freeSeatsIdx.length)];
+
+      // Pick randomly profile identity
+      const profile = CUSTOMER_PROFILES[Math.floor(Math.random() * CUSTOMER_PROFILES.length)];
+      
+      // Randomly select one of the 4 Malaysian dishes
+      const dishesKeys = Object.keys(FOOD_STATION_CONFIGS);
+      const chosenOrder = dishesKeys[Math.floor(Math.random() * dishesKeys.length)];
+
+      // Populate seat slots
+      GAME_STATE.seats[randomVacantIdx] = {
+        name: profile.name,
+        emoji: profile.emoji,
+        order: chosenOrder,
+        patience: 100, // Starts satisfied at 100% patience
+        status: 'waiting',
+        eatProgress: 0
+      };
+
+      playSound('arrive');
+      renderSeatsOnly();
+
+      // Trigger arrival speech greeting bubble
+      triggerNotificationBubble(randomVacantIdx, `Hai! Saya nak order ${FOOD_STATION_CONFIGS[chosenOrder].name} ${FOOD_STATION_CONFIGS[chosenOrder].icon}, boleh?`);
+    }
+
+    // Visual bubble alerts
+    function triggerNotificationBubble(seatIdx, text) {
+      const seatDiv = document.getElementById(`seat-${seatIdx}`);
+      if (seatDiv) {
+        const bubble = seatDiv.querySelector('.noti-bubble');
+        if (bubble) {
+          bubble.innerText = text;
+          bubble.classList.remove('hidden');
+          // Hide again after 3.8s
+          setTimeout(() => {
+            bubble.classList.add('hidden');
+          }, 3800);
+        }
+      }
+    }
+
+    // Float floating tip/score pointers
+    function createFloatingPointLabel(text, nativeEventObj) {
+      let posX = window.innerWidth / 2;
+      let posY = window.innerHeight / 2 - 100;
+
+      if (nativeEventObj && nativeEventObj.clientX) {
+        posX = nativeEventObj.clientX;
+        posY = nativeEventObj.clientY;
+      }
+
+      const fLabel = document.createElement('div');
+      fLabel.className = "absolute text-xs font-fredoka font-bold text-green-700 bg-white border border-[#3e2715] px-2 py-1 rounded-lg z-50 shadow-md pointer-events-none transition-all duration-1000 transform";
+      fLabel.style.left = `${posX}px`;
+      fLabel.style.top = `${posY}px`;
+      fLabel.innerText = text;
+
+      document.body.appendChild(fLabel);
+
+      // Lift & fade transition
+      setTimeout(() => {
+        fLabel.style.transform = "translateY(-45px)";
+        fLabel.style.opacity = "0";
+      }, 50);
+
+      setTimeout(() => {
+        fLabel.remove();
+      }, 1100);
+    }
+
+    // Check game loop finish winning milestones
+    function checkWinCondition() {
+      if (GAME_STATE.cash >= GAME_STATE.targetCash) {
+        // Save score if it beats high record
+        if (GAME_STATE.score > GAME_STATE.highScore) {
+          GAME_STATE.highScore = GAME_STATE.score;
+          localStorage.setItem('food_stall_rush_high_score', GAME_STATE.highScore.toString());
+          document.getElementById('best-score').innerText = GAME_STATE.highScore;
+        }
+
+        // Populate win statistics
+        document.getElementById('win-cash').innerText = Math.round(GAME_STATE.cash);
+        document.getElementById('win-score').innerText = GAME_STATE.score;
+        document.getElementById('win-served').innerText = GAME_STATE.customersServed;
+        document.getElementById('win-upgraded').innerText = GAME_STATE.upgraded ? "Dinaik Taraf Penuh (2x Cepat)" : "Tiada Naik Taraf";
+
+        // Toggle UI
+        changeScreen('win');
+        playSound('win');
+        triggerConfettiRain();
+      }
+    }
+
+    // Celebratory win decoration showers
+    function triggerConfettiRain() {
+      const parent = document.getElementById('confetti-container');
+      parent.innerHTML = ''; // reset previous confetti elements
+      const emojis = ['🎈', '✨', '🪙', '💵', '🎉', '🌟', '🥳'];
+
+      for (let i = 0; i < 40; i++) {
+        const confObj = document.createElement('div');
+        confObj.className = "confetti select-none text-xl z-20 pointer-events-none";
+        confObj.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        confObj.style.left = `${Math.random() * 100}%`;
+        confObj.style.animationDelay = `${Math.random() * 3}s`;
+        confObj.style.fontSize = `${Math.random() * 18 + 12}px`;
+        parent.appendChild(confObj);
+      }
+    }
+
+  </script>
+</body>
+</html>
